@@ -4,9 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+flask-marshmallow = "*"
+flask-sqlalchemy = "*"
+marshmallow-sqlalchemy = "*"
+jsonify = "*"
 flask = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.11"
