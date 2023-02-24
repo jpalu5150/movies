@@ -13,6 +13,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "ap
 ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
+
 # Define the Movie model
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,7 +69,7 @@ def get_movie(id):
     return movie_schema.jsonify(movie)
 
 #update movie by id
-@app.route("/movie/<id>", methods=["PUT"])
+@app.route("/movie/edit/<id>", methods=["PUT"])
 def movie_update(id):
     movie = Movie.query.get(id)
     title = request.json['title']
