@@ -63,7 +63,7 @@ movieList.addEventListener('click', event => {
       .then(response => {
         const movie = response.data;
         const li = event.target.parentNode;
-        li.innerHTML = `${movie.title} (${movie.director}, ${movie.year}) <button class="delete-movie" data-id="${movie.id}">Delete</button> <button class="edit-movie" data-id="${movie.id}">Edit</button>`;
+        li.innerHTML = `${movie.title} (${movie.d}, ${movie.year}) <button class="delete-movie" data-id="${movie.id}">Delete</button> <button class="edit-movie" data-id="${movie.id}">Edit</button>`;
       })
       .catch(error => {
         console.log(error);
