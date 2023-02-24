@@ -1,0 +1,146 @@
+@app.route('/')
+def check():
+    return "Hey Flask"
+
+
+
+@app.route('/movie/add', methods=['POST'])
+def add_movie():
+    if request.content_type != 'application/json':
+        return jsonify('Error: Data must be sent as JSON CHUMP')
+
+    post_data = request.get_json()
+    title = post_data.get('title')
+    genre = post_data.get('genre')
+    mpaa_rating = post_data.get('mpaa_rating')
+    poster_img = post_data.get('poster_img')
+
+    if title == None:
+        return jsonify('Error: Title cannot be empty you must supply a valid title')
+
+    new_record  = Movie(title, genre, mpaa_rating, poster_img)
+    db.session.add(new_record)
+    db.session.commit()
+
+    # console.log('Added movie record')
+    return jsonify(movie_schema.dump(new_record))
+
+
+
+
+
+@app.route("/movies", methods=['GET'])
+def get_movies():
+    all_movies = Guide.query.all()
+    result =  movies_schema.dump(all_movies)
+    return jsonify(results)
+
+@app.route("/movie/<id>", methods=['GET'])
+def get_movie(id):
+    movie = Movie.query.get(id)
+    return guide_schema.jsonify(guide)
+
+
+
+
+
+class ReviewSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'star_rating', 'review_text', 'movie_id')
+        
+review_schema = ReviewSchema()
+multi_review_schema = ReviewSchema(many=True)
+
+
+class MovieSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'title', 'genre', 'mpaa_rating', 'poster_img', 'all_reviews')
+    all_reviews = ma.Nested(multi_review_schema)
+
+movie_schema = MovieSchema()
+multi_movie_schema = MovieSchema(many=True)
+
+
+
+# Set up the database
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "app.sqlite")
+ma = Marshmallow(app)
+db = SQLAlchemy(app)
+
+# Define the Movie model
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    genre = db.Column(db.String(50), nullable=False)
+    
+    
+
+    def __init__(self, title, year, genre ):
+        self.title = title
+        self.year = year
+        self.genre = genre
+        
+class MovieSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'title' , 'year', 'genre')
+        
+movie_schema = MovieSchema()
+movies_schema = MovieSchema(many=True)
+# Set up the database
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "app.sqlite")
+ma = Marshmallow(app)
+db = SQLAlchemy(app)
+
+# Define the Movie model
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    genre = db.Column(db.String(50), nullable=False)
+    
+    
+
+    def __init__(self, title, year, genre ):
+        self.title = title
+        self.year = year
+        self.genre = genre
+        
+class MovieSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'title' , 'year', 'genre')
+        
+movie_schema = MovieSchema()
+movies_schema = MovieSchema(many=True)
+
+
+
+---------------------------------------------------------------------------------
+# Set up the database
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "app.sqlite")
+ma = Marshmallow(app)
+db = SQLAlchemy(app)
+
+# Define the Movie model
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    genre = db.Column(db.String(50), nullable=False)
+    
+    
+
+    def __init__(self, title, year, genre ):
+        self.title = title
+        self.year = year
+        self.genre = genre
+        
+class MovieSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'title' , 'year', 'genre')
+        
+movie_schema = MovieSchema()
+movies_schema = MovieSchema(many=True)

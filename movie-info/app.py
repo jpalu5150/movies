@@ -1,10 +1,8 @@
 # Import Flask and the necessary libraries
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from flask import jsonify
 import os
-
 
 # Set up the Flask app
 app = Flask(__name__)
@@ -12,6 +10,7 @@ app = Flask(__name__)
 # Set up the database
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "app.sqlite")
+ma = Marshmallow(app)
 db = SQLAlchemy(app)
 
 # Define the Movie model
@@ -20,51 +19,79 @@ class Movie(db.Model):
     title = db.Column(db.String(100), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     genre = db.Column(db.String(50), nullable=False)
-    poster_img = db.Column(db.String, unique=True)
-
-    def __init__(self, title, genre, poster_img):
+    
+    def __init__(self, title, year, genre ):
         self.title = title
+        self.year = year
         self.genre = genre
-        self.poster_img = poster_img
+        
+class MovieSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'title' , 'year', 'genre')
+        
+movie_schema = MovieSchema()
+movies_schema = MovieSchema(many=True)
 
-@app.route('/movie/add', methods=['POST'])
+
+#this is the first endpoint single post
+@app.route('/movie', methods=['POST'])
 def add_movie():
     if request.content_type != 'application/json':
         return jsonify('Error: Data must be sent as JSON CHUMP')
 
-    post_data = request.get_json()
-    title = post_data.get('title')
-    genre = post_data.get('genre')
-    mpaa_rating = post_data.get('mpaa_rating')
-    poster_img = post_data.get('poster_img')
+    #post_data = request.get_json()
+    title = request.json['title']
+    genre = request.json['genre']
+    year = request.json['year']
 
     if title == None:
         return jsonify('Error: Title cannot be empty you must supply a valid title')
-
-    new_record  = Movie(title, genre, mpaa_rating, poster_img)
-    db.session.add(new_record)
+    new_movie  = Movie(title, genre, year)
+    db.session.add(new_movie)
     db.session.commit()
+    
+    movie = Movie.query.get(new_movie.id)
+    return movie_schema.jsonify(movie)
 
-    # console.log('Added movie record')
-    return jsonify(movie_schema.dump(new_record))
+#end point for returning all movies 
 
-class ReviewSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'star_rating', 'review_text', 'movie_id')
-        
-review_schema = ReviewSchema()
-multi_review_schema = ReviewSchema(many=True)
+@app.route("/movies", methods=['GET'])
+def get_movies():
+    all_movies = Movie.query.all()
+    result =  movies_schema.dump(all_movies)
+    return jsonify(result)
 
+# get single movie
+@app.route("/movie/<id>", methods=["GET"])
+def get_movie(id):
+    movie = Movie.query.get(id)
+    return movie_schema.jsonify(movie)
 
-class MovieSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'title', 'genre', 'mpaa_rating', 'poster_img', 'all_reviews')
-    all_reviews = ma.Nested(multi_review_schema)
+#update movie by id
+@app.route("/movie/<id>", methods=["PUT"])
+def movie_update(id):
+    movie = Movie.query.get(id)
+    title = request.json['title']
+    genre = request.json['genre']
+    year = request.json['year']
 
-movie_schema = MovieSchema()
-multi_movie_schema = MovieSchema(many=True)
+    movie.title = title
+    movie.genre = genre
+    movie.year = year 
 
+    db.session.commit()
+    return movie_schema.jsonify(movie)
+
+#Endpoint for deleting a record
+@app.route("/movie/<id>", methods = ["DELETE"])
+def movie_delete(id):
+    movie = Movie.query.get(id)
+    db.session.delete(movie)
+    db.session.commit()
+    return "Guide was successfully deleted"
 
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
